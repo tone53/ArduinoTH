@@ -1,10 +1,8 @@
 #include <EasyDDNS.h>
-
 #include <DHTesp.h>
-
 #include <ESP8266WiFi.h>
-const char* ssid = "Login3B"; //wifi SSID name
-const char* pass = "xvxv1204"; //password
+const char* ssid = "xxxx"; //wifi SSID name
+const char* pass = "xxxx"; //password
 WiFiServer server(8369); //port
 
 DHTesp dht;
@@ -27,7 +25,7 @@ DHTesp dht;
 
  /*int chkPWO1;
  int chkPWO2;
- int chkPWO3; 
+ int chkPWO3;
 */
 void setup () {
   Serial.begin(115200);
@@ -44,8 +42,8 @@ void setup () {
   digitalWrite(RIG3_ON_OFF, HIGH);
   digitalWrite(RIG4_ON_OFF, HIGH);
 
-  dht.setup(14); // data pin 14
-  
+  dht.setup(14); // DHT data pin 14
+
   WiFi.begin(ssid, pass);
   while (WiFi.status() != WL_CONNECTED) {
     Serial.print(".");
@@ -61,22 +59,22 @@ void setup () {
   Serial.println(WiFi.localIP());
   server.begin();
   Serial.println("Server started");
-  
+
   EasyDDNS.service("duckdns");    // Enter your DDNSName - "duckdns" / "noip"
-  EasyDDNS.client("rigone.duckdns.org","095a65b4-ee15-4d6d-92df-b944f188ba8e"); //  Example - "esp.duckdns.org","1234567"
-  
+  EasyDDNS.client("xxx.duckdns.org","xxxx-xxxx-xxxx-xxxx-xxxx"); //  Example - "esp.duckdns.org","1234567"
+
   }
 
 /*void checkStatus(){
   chkPWO1 = digitalRead(RIG1_CHK);
   chkPWO2 = digitalRead(RIG2_CHK);
   chkPWO3 = digitalRead(RIG3_CHK);
-  //if (!chkPWO1) 
+  //if (!chkPWO1)
 }*/
 void loop() {
 
   EasyDDNS.update(10000); // Check for New Ip Every 10 Seconds.
-  
+
   // Check if a client has connected
 
   WiFiClient client = server.available();
@@ -152,7 +150,7 @@ void loop() {
   delay(dht.getMinimumSamplingPeriod());
   float humidity = dht.getHumidity();
   float temperature = dht.getTemperature();
-  
+
   client.println("HTTP/1.1 200 OK");
   client.println("Content-Type: text/html");
   client.println(""); //  do not forget this one
@@ -168,19 +166,19 @@ void loop() {
   client.println("[ ความชื้น  : ");
   client.println(humidity);
   client.println(" % ]</h2>");
-  
+
   /*if (chkPWO1 == LOW) {
     client.print("Off");
   } else {
     client.print("On");
-   
+
   }*/
   client.print("RIG 1: ");
   client.println("<br><br>");
   client.println("<a href=\"/RIG1=ON\"\"><button>:: เปิด ::</button></a>");
   client.println("<a href=\"/RIG1=OFF\"\"><button>::  ปิด ::</button></a><br />");
   client.println("<br><br>");
-  
+
   client.print("RIG 2: ");
   client.println("<br><br>");
   client.println("<a href=\"/RIG2=ON\"\"><button>:: เปิด ::</button></a>");
@@ -199,7 +197,7 @@ void loop() {
   client.println("<a href=\"/RIG4=OFF\"\"><button>:: ปิด ::</button></a><br />");
 
   client.println("</html>");
-  
+
   delay(1);
   //Serial.println("Client disonnected");
   //Serial.println("");
