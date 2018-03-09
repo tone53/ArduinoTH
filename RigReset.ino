@@ -1,25 +1,36 @@
 #define BLYNK_PRINT Serial
 #include <ESP8266WiFi.h>
 #include <BlynkSimpleEsp8266.h>
+#include <DHT.h>
 
 // You should get Auth Token in the Blynk App.
 // Go to the Project Settings (nut icon).
-char auth[] = "xxxxxxxxxxxxxxxx";
+char auth[] = "xxxxxxxxxxxxxxxxxx";
 
 // Your WiFi credentials.
 // Set password to "" for open networks.
-char ssid[] = "WIFI";
-char pass[] = "Wifipass";
+char ssid[] = "xxxxx";
+char pass[] = "xxxxxx";
 
-//Relay in Pin XX - GPIOxx
+#define DHTPIN 14 // What DHT pin we're connected to
+
+//Relay in Pin XX GPIOxx
 #define Relay1 16
 #define Relay2 5
 #define Relay3 4
 #define Relay4 12
-//#define Relay5 6
-//#define Relay6 5
+//#define Relay5 0
+//#define Relay6 0
 
-// in Blynk app writes values to the Virtual Pin V1- V4 (V5-6 for temp)
+// Uncomment whatever type you're using!
+#define DHTTYPE DHT11     // DHT 11
+//#define DHTTYPE DHT22   // DHT 22, AM2302, AM2321
+//#define DHTTYPE DHT21   // DHT 21, AM2301
+
+DHT dht(DHTPIN, DHTTYPE);
+BlynkTimer timer;
+
+// in Blynk app writes values to the Virtual Pin 1-4 (V5-V6 for DHT)
 BLYNK_WRITE(V1)
 {
   int RelayStatus1 = param.asInt();
@@ -52,6 +63,7 @@ BLYNK_WRITE(V3)
     digitalWrite(Relay3, HIGH);
   }
 }
+
 
 BLYNK_WRITE(V4)
 {
@@ -87,9 +99,26 @@ BLYNK_WRITE(V8)
 }
 */
 
+// This function sends Arduino's up time every second to Virtual Pin (5).
+// In the app, Widget's reading frequency should be set to PUSH. This means
+// that you define how often to send data to Blynk App.
+void sendSensor()
+{
+  float h = dht.readHumidity();
+  float t = dht.readTemperature(); // or dht.readTemperature(true) for Fahrenheit
+
+  if (isnan(h) || isnan(t)) {
+    Serial.println("Failed to read from DHT sensor!");
+    return;
+  }
+  // You can send any value at any time.
+  // Please don't send more that 10 values per second.
+  Blynk.virtualWrite(V5, h);
+  Blynk.virtualWrite(V6, t);
+}
+
 void setup()
 {
-
   pinMode(Relay1, OUTPUT); // sets the digital pin as output
   digitalWrite(Relay1, HIGH); // Prevents relays from starting up engaged
 
@@ -108,16 +137,21 @@ void setup()
   pinMode(Relay6, OUTPUT); // sets the digital pin as output
   digitalWrite(Relay6, HIGH); // Prevents relays from starting up engaged
 */
-
-  // communication with the host computer
+  // Debug console
   Serial.begin(9600);
   delay(10);
 
   Blynk.begin(auth, ssid, pass);
 
+
+  dht.begin();
+
+  // Setup a function to be called every second
+  timer.setInterval(1000L, sendSensor);
 }
 
 void loop()
 {
   Blynk.run();
+  timer.run();
 }
